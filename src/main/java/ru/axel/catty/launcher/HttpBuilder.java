@@ -72,6 +72,11 @@ public final class HttpBuilder implements IHttpBuilder {
         }
     }
 
+    @Override
+    public IConfig getConfig() {
+        return config;
+    }
+
     class Handler extends HttpCattyQueryHandler {
         public Handler(AsynchronousSocketChannel clientChannel, int limitBuffer, Logger loggerInstance) {
             super(clientChannel, limitBuffer, loggerInstance);

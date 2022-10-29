@@ -14,4 +14,5 @@ public interface IHttpBuilder {
     IHttpBuilder setPlugins(Plugins plugins);
     IHttpBuilder setRouting(IRouting routing);
     void launch();
+    IConfig getConfig();
 }
