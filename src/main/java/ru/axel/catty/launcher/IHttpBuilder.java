@@ -11,6 +11,9 @@ public interface IHttpBuilder {
         Class<? extends IConfig> configClass,
         String pathFromResource
     ) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException;
+    IHttpBuilder setConfig(
+        IConfig config
+    );
     IHttpBuilder setPlugins(Plugins plugins);
     IHttpBuilder setRouting(IRouting routing);
     void launch();

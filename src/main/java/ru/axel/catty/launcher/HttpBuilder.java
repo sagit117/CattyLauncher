@@ -2,6 +2,7 @@ package ru.axel.catty.launcher;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ru.axel.catty.engine.CattyEngine;
 import ru.axel.catty.engine.ICattyEngine;
 import ru.axel.catty.engine.handler.HttpCattyQueryHandler;
@@ -36,6 +37,7 @@ public final class HttpBuilder implements IHttpBuilder {
     HttpBuilder(Logger loggerImpl) {
         logger = loggerImpl;
     }
+
     @Contract(value = "_, _ -> this", pure = true)
     public IHttpBuilder setConfig(
         @NotNull Class<? extends IConfig> configClass,
@@ -44,6 +46,12 @@ public final class HttpBuilder implements IHttpBuilder {
         var constructor = configClass.getDeclaredConstructor(String.class, Logger.class);
         config = constructor.newInstance(pathFromResource, logger);
 
+        return this;
+    }
+    @Contract(pure = true)
+    @Override
+    public @NotNull IHttpBuilder setConfig(IConfig configInstance) {
+        config = configInstance;
         return this;
     }
 
