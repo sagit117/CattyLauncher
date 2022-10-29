@@ -111,9 +111,6 @@ public final class HttpBuilder implements IHttpBuilder {
                     exc.printStackTrace();
                 }
 
-                logger.severe("Response code: " + response.getResponseCode());
-                logger.severe("Request ID: " + request.getParams("REQUEST_ID"));
-
                 return response.getByteBuffer();
             } catch (RequestBuildException | IOException e) {
                 throw new RuntimeException(e);
