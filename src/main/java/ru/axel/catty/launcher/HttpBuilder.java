@@ -111,6 +111,7 @@ public final class HttpBuilder implements IHttpBuilder {
                     }
                 } catch (ExecutionException executionException) { // ожидание ответа превышено
                     response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
+                    executionException.printStackTrace();
                 } catch (Throwable exc) {
                     response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
                     exc.printStackTrace();
