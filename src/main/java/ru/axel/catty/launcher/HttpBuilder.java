@@ -7,6 +7,7 @@ import ru.axel.catty.engine.CattyEngine;
 import ru.axel.catty.engine.ICattyEngine;
 import ru.axel.catty.engine.handler.HttpCattyQueryHandler;
 import ru.axel.catty.engine.plugins.Plugins;
+import ru.axel.catty.engine.request.ClientInfo;
 import ru.axel.catty.engine.request.IHttpCattyRequest;
 import ru.axel.catty.engine.request.Request;
 import ru.axel.catty.engine.request.RequestBuildException;
@@ -95,6 +96,8 @@ public final class HttpBuilder implements IHttpBuilder {
             try {
                 final IHttpCattyRequest request = new Request(requestBuffer, logger);
                 final IHttpCattyResponse response = new Response(logger);
+
+                request.setClientInfo(new ClientInfo(client.getLocalAddress(), client.getRemoteAddress()));
 
                 try {
                     var route = routing.takeRoute(request);
