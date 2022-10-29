@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'ru.axel.catty.launcher'
+version '0.0.1'
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs("lib")
+    }
+}
+
+dependencies {
+    implementation(
+        files(
+            "libs/CattyEngine-1.0.5.jar",
+            "libs/logger-1.0.0.jar",
+            "libs/Conveyor-1.0.2.jar"
+        )
+    )
+
+    implementation 'org.jetbrains:annotations:23.0.0'
+    implementation 'com.typesafe:config:1.4.2'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+application {
+    mainClass = 'ru.axel.Main'
+}
