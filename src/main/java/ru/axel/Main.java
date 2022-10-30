@@ -28,8 +28,11 @@ public class Main {
         CattyLauncher
             .builder(logger)
             .setConfig(ConfigApp.class, "config/application.conf")
-            .setPlugins(plugins)
-            .setRouting(routing)
+            .usePlugins(plugins)
+            .useRouting(routing)
+            .useAfterResponse((iHttpCattyRequest, iHttpCattyResponse) -> {
+                logger.info("Код ответ: " + iHttpCattyResponse.getResponseCode());
+            })
             .launch();
     }
 

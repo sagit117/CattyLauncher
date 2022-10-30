@@ -15,6 +15,7 @@ import ru.axel.catty.engine.response.IHttpCattyResponse;
 import ru.axel.catty.engine.response.Response;
 import ru.axel.catty.engine.response.ResponseCode;
 import ru.axel.catty.engine.routing.IRouting;
+import ru.axel.catty.engine.routing.RouteExecute;
 import ru.axel.catty.launcher.config.IConfig;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ public final class HttpBuilder implements IHttpBuilder {
     private IConfig config;
     private IRouting routing;
     private Plugins plugins;
+    private RouteExecute afterResponse;
 
     HttpBuilder(Logger loggerImpl) {
         logger = loggerImpl;
@@ -57,14 +59,21 @@ public final class HttpBuilder implements IHttpBuilder {
     }
 
     @Override
-    public IHttpBuilder setPlugins(Plugins pluginsModule) {
+    public IHttpBuilder usePlugins(Plugins pluginsModule) {
         plugins = pluginsModule;
         return this;
     }
 
     @Override
-    public IHttpBuilder setRouting(IRouting routingModule) {
+    public IHttpBuilder useRouting(IRouting routingModule) {
         routing = routingModule;
+        return this;
+    }
+
+    @Contract(pure = true)
+    @Override
+    public @Nullable IHttpBuilder useAfterResponse(RouteExecute execute) {
+        afterResponse = execute;
         return this;
     }
 
@@ -128,8 +137,10 @@ public final class HttpBuilder implements IHttpBuilder {
                     exc.printStackTrace();
                 }
 
+                if (afterResponse != null) afterResponse.exec(request, response);
+
                 return response.getByteBuffer();
-            } catch (RequestBuildException | IOException e) {
+            } catch (RequestBuildException | IOException | URISyntaxException e) {
                 throw new RuntimeException(e);
             }
         }
