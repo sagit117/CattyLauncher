@@ -30,6 +30,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+/**
+ * Построитель конвейера обработки запроса/ответа
+ */
 public final class HttpBuilder implements IHttpBuilder {
     private final Logger logger;
     private IConfig config;
@@ -70,6 +73,11 @@ public final class HttpBuilder implements IHttpBuilder {
         return this;
     }
 
+    /**
+     * Метод применится после предоставления ответа
+     * @param execute обработчик
+     * @return построитель
+     */
     @Contract(pure = true)
     @Override
     public @Nullable IHttpBuilder useAfterResponse(RouteExecute execute) {
