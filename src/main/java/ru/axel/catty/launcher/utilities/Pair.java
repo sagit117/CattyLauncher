@@ -29,6 +29,7 @@ public final class Pair<K, V> {
         return value;
     }
 
+    @Override
     @Contract(pure = true)
     public @NotNull String toString() {
         return "[key=" + key + ", value=" + value + "]";
