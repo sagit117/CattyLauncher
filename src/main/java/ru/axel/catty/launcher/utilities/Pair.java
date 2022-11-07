@@ -16,7 +16,7 @@ public final class Pair<K, V> {
     @SuppressWarnings("unchecked")
     public Pair(String @NotNull [] arr) {
         key = (K) arr[0];
-        value = arr[1] != null ? (V) arr[1] : null;
+        value = arr.length > 1 ? (V) arr[1] : null;
     }
 
     public K getKey() {
