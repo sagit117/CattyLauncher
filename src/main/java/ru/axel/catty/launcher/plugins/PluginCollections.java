@@ -30,10 +30,12 @@ public final class PluginCollections {
                       "Установка параметров в запрос: " + pair
                     );
 
-                    request.setParams(
-                        pair.getKey(),
-                        URLDecoder.decode(pair.getValue(), StandardCharsets.UTF_8)
-                    );
+                    if (pair.getValue() != null) {
+                        request.setParams(
+                            pair.getKey(),
+                            URLDecoder.decode(pair.getValue(), StandardCharsets.UTF_8)
+                        );
+                    }
                 });
             }
         };

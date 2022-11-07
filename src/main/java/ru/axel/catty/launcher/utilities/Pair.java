@@ -2,6 +2,7 @@ package ru.axel.catty.launcher.utilities;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class Pair<K, V> {
     private final K key;
@@ -23,6 +24,7 @@ public final class Pair<K, V> {
         return key;
     }
 
+    @Nullable
     public V getValue() {
         return value;
     }
