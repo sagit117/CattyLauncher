@@ -27,6 +27,9 @@ public interface IHttpBuilder {
      * @return построитель
      */
     IHttpBuilder useAfterResponse(RouteExecute execute);
+
+    IHttpBuilder useWithExceptionally(RouteExecute execute);
+
     void launch();
     IConfig getConfig();
 }

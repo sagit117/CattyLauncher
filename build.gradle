@@ -16,7 +16,7 @@ repositories {
 dependencies {
     implementation(
         files(
-            "libs/CattyEngine-1.1.1.jar",
+            "libs/CattyEngine-1.1.5.jar",
             "libs/logger-1.0.0.jar",
             "libs/Conveyor-1.0.2.jar"
         )

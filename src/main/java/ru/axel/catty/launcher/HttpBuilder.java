@@ -14,6 +14,7 @@ import ru.axel.catty.engine.request.RequestBuildException;
 import ru.axel.catty.engine.response.IHttpCattyResponse;
 import ru.axel.catty.engine.response.Response;
 import ru.axel.catty.engine.response.ResponseCode;
+import ru.axel.catty.engine.routing.ICattyRoute;
 import ru.axel.catty.engine.routing.IRouting;
 import ru.axel.catty.engine.routing.RouteExecute;
 import ru.axel.catty.launcher.config.IConfig;
@@ -24,10 +25,8 @@ import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Optional;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 /**
@@ -39,6 +38,8 @@ public final class HttpBuilder implements IHttpBuilder {
     private IRouting routing;
     private Plugins plugins;
     private RouteExecute afterResponse;
+    private RouteExecute withExceptionally;
+    private ExecutorService responseExecutors;
 
     HttpBuilder(Logger loggerImpl) {
         logger = loggerImpl;
@@ -51,6 +52,7 @@ public final class HttpBuilder implements IHttpBuilder {
     ) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         var constructor = configClass.getDeclaredConstructor(String.class, Logger.class);
         config = constructor.newInstance(pathFromResource, logger);
+        responseExecutors = Executors.newWorkStealingPool(config.getPoolLimit());
 
         return this;
     }
@@ -85,6 +87,17 @@ public final class HttpBuilder implements IHttpBuilder {
         return this;
     }
 
+    /**
+     * В методе можно обработать ошибки запроса. Метод запускается перед отправкой ответа.
+     * @param execute обработчик
+     * @return построитель
+     */
+    @Override
+    public IHttpBuilder useWithExceptionally(RouteExecute execute) {
+        withExceptionally = execute;
+        return this;
+    }
+
     public void launch() {
         try(final ICattyEngine engine = new CattyEngine(
             new InetSocketAddress(config.getPort()),
@@ -103,6 +116,9 @@ public final class HttpBuilder implements IHttpBuilder {
         return config;
     }
 
+    /**
+     * Класс обработчик запроса и ответа
+     */
     class Handler extends HttpCattyQueryHandler {
         public Handler(AsynchronousSocketChannel clientChannel, int limitBuffer, Logger loggerInstance) {
             super(clientChannel, limitBuffer, loggerInstance);
@@ -117,7 +133,7 @@ public final class HttpBuilder implements IHttpBuilder {
                 request.setClientInfo(new ClientInfo(client.getLocalAddress(), client.getRemoteAddress()));
 
                 try {
-                    var route = routing.takeRoute(request);
+                    final Optional<ICattyRoute> route = routing.takeRoute(request);
 
                     if (route.isPresent()) {
                         request.setRoute(route.get());
@@ -128,10 +144,11 @@ public final class HttpBuilder implements IHttpBuilder {
                                 try {
                                     request.handle(response);
                                 } catch (IOException | URISyntaxException e) {
+                                    // ошибка занесена в запрос
                                     response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
                                     e.printStackTrace();
                                 }
-                            }, Executors.newWorkStealingPool(config.getPoolLimit()))
+                            }, responseExecutors)
                             .orTimeout(config.getAnswerTimeout(), TimeUnit.SECONDS)
                             .get();
                     } else {
@@ -139,19 +156,34 @@ public final class HttpBuilder implements IHttpBuilder {
                     }
                 } catch (ExecutionException executionException) { // ожидание ответа превышено
                     response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
+                    request.addException(executionException);
 
                     logger.throwing(HttpBuilder.class.getName(), "responseBuffer", executionException);
                     executionException.printStackTrace();
                 } catch (Throwable exc) {
                     response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
+                    request.addException(new Exception(exc));
 
                     logger.throwing(HttpBuilder.class.getName(), "responseBuffer", exc);
                     exc.printStackTrace();
                 }
 
-                if (afterResponse != null) afterResponse.exec(request, response);
+                if (withExceptionally != null) withExceptionally.exec(request, response);
 
-                return response.getByteBuffer();
+                final ByteBuffer responseBuffer = response.getByteBuffer();
+
+                CompletableFuture.runAsync(() ->{
+                    if (afterResponse != null) {
+                        try {
+                            afterResponse.exec(request, response);
+                        } catch (IOException | URISyntaxException e) {
+                            logger.severe("Ошибка пост обработки ответа: " + e.getLocalizedMessage());
+                        }
+                    }
+                }, responseExecutors);
+
+                // ответ
+                return responseBuffer;
             } catch (RequestBuildException | IOException | URISyntaxException e) {
                 throw new RuntimeException(e);
             }
