@@ -54,12 +54,19 @@ public final class HttpBuilder implements IHttpBuilder {
         config = constructor.newInstance(pathFromResource, logger);
         responseExecutors = Executors.newWorkStealingPool(config.getPoolLimit());
 
+        logger.config("В построитель добавлен класс конфигурации");
+        logger.config("Инициирован пул потоков для предоставления ответа");
+
         return this;
     }
     @Contract(pure = true)
     @Override
     public @NotNull IHttpBuilder setConfig(IConfig configInstance) {
         config = configInstance;
+        responseExecutors = Executors.newWorkStealingPool(config.getPoolLimit());
+
+        logger.config("В построитель добавлен класс конфигурации");
+        logger.config("Инициирован пул потоков для предоставления ответа");
         return this;
     }
 
@@ -144,11 +151,15 @@ public final class HttpBuilder implements IHttpBuilder {
                                 try {
                                     request.handle(response);
                                 } catch (IOException | URISyntaxException e) {
-                                    // ошибка занесена в запрос
+                                    // ошибка занесена в запрос и залогирована в методе handle
                                     response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
                                     e.printStackTrace();
                                 }
                             }, responseExecutors)
+                            .exceptionally((ex) -> {
+                                logger.severe("Ошибка в асинхронной обработке запроса: " + ex.getLocalizedMessage());
+                                return null;
+                            })
                             .orTimeout(config.getAnswerTimeout(), TimeUnit.SECONDS)
                             .get();
                     } else {
