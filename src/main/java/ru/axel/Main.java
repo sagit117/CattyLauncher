@@ -13,7 +13,6 @@ import ru.axel.catty.launcher.config.ConfigApp;
 import ru.axel.catty.launcher.controllers.BaseController;
 import ru.axel.logger.MiniLogger;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
@@ -30,6 +29,9 @@ public class Main {
             .setConfig(ConfigApp.class, "config/application.conf")
             .usePlugins(plugins)
             .useRouting(routing)
+            .useWithExceptionally((iHttpCattyRequest, iHttpCattyResponse) -> {
+                logger.info("Клиент: " + iHttpCattyRequest.getClientInfo().toString());
+            })
             .useAfterResponse((iHttpCattyRequest, iHttpCattyResponse) -> {
                 logger.info("Код ответ: " + iHttpCattyResponse.getResponseCode());
             })
@@ -42,7 +44,12 @@ public class Main {
         }
 
         @GET(path = "/home")
-        public void home(IHttpCattyRequest request, @NotNull IHttpCattyResponse response) throws IOException {
+        public void home(IHttpCattyRequest request, @NotNull IHttpCattyResponse response) {
+            response.respond(ResponseCode.OK, "HOME OK");
+        }
+
+        @GET(path = "/")
+        public void homeLittle(IHttpCattyRequest request, @NotNull IHttpCattyResponse response) {
             response.respond(ResponseCode.OK, "HOME OK");
         }
     }
