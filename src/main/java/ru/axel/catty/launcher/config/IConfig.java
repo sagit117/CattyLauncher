@@ -30,6 +30,9 @@ public interface IConfig {
             if (orDefault instanceof String) {
                 return (T) config.getString(prop);
             }
+            if (orDefault instanceof Boolean) {
+                return (T) Boolean.valueOf(config.getBoolean(prop));
+            }
 
             return orDefault;
         } catch (Exception e) {
