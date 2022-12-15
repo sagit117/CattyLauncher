@@ -4,22 +4,33 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class ConfigApp implements IConfig {
     private final Logger logger;
-    private final int port;
-    private final String protocol;
-    private final int limitAllocateBufferForRequest;
-    private final int poolLimit;
-    private final InetSocketAddress hostAddress;
-    private final int answerTimeout;
+    private int port;
+    private String protocol;
+    private int limitAllocateBufferForRequest;
+    private int poolLimit;
+    private InetSocketAddress hostAddress;
+    private int answerTimeout;
     protected final Config config;
 
     public ConfigApp(String pathFromResource, Logger loggerInstance) {
         logger = loggerInstance;
         config = ConfigFactory.parseResources(pathFromResource);
+
+        init();
+    }
+
+    public ConfigApp(Config config, Logger loggerInstance) {
+        logger = loggerInstance;
+        this.config = config;
+
+        init();
+    }
+
+    private void init() {
         port = getConfigOrDefault("catty.port", 8080, config);
         protocol = getConfigOrDefault("catty.protocol", "http", config);
         limitAllocateBufferForRequest = getConfigOrDefault(
