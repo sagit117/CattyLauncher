@@ -56,15 +56,15 @@ public final class PluginCollections {
                 final List<String> list = Arrays.stream(encoding.split(",")).map(String::toLowerCase).toList();
 
                 final boolean isGzip = list.contains("gzip");
-                final boolean isDeflate = list.contains("deflate");
 
-                if (isGzip && isDeflate) {
+                if (isGzip) {
                     response.setTransformMethod((byteResponse) -> {
                         try (
                             final ByteArrayOutputStream bos = new ByteArrayOutputStream(byteResponse.length);
                             final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bos)
                         ) {
                             gzipOutputStream.write(byteResponse);
+                            response.addHeader(Headers.CONTENT_ENCODING, "gzip");
 
                             return bos.toByteArray();
                         } catch (IOException e) {
