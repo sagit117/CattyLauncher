@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'ru.axel.catty.launcher'
-version '0.1.8'
+version '0.1.81'
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ repositories {
 dependencies {
     implementation(
         files(
-            "libs/CattyEngine-1.1.6.jar",
+            "libs/CattyEngine-1.1.61.jar",
             "libs/logger-1.0.0.jar",
             "libs/Conveyor-1.0.3.jar",
             "libs/FileLoader-1.0.4.jar"

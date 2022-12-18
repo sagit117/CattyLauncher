@@ -3,15 +3,20 @@ package ru.axel.catty.launcher.plugins;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import ru.axel.catty.engine.headers.Headers;
+import ru.axel.catty.engine.response.TransformResponse;
 import ru.axel.catty.engine.routing.RouteExecute;
 import ru.axel.catty.launcher.utilities.Pair;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 
 public final class PluginCollections {
     /**
@@ -38,6 +43,35 @@ public final class PluginCollections {
                         );
                     }
                 });
+            }
+        };
+    }
+
+    @Contract(pure = true)
+    public static @NotNull RouteExecute Gzip() {
+        return (request, response) -> {
+            final String encoding = request.getHeaders(Headers.ACCEPT_ENCODING);
+
+            if (encoding != null) {
+                final List<String> list = Arrays.stream(encoding.split(",")).map(String::toLowerCase).toList();
+
+                final boolean isGzip = list.contains("gzip");
+                final boolean isDeflate = list.contains("deflate");
+
+                if (isGzip && isDeflate) {
+                    response.setTransformMethod((byteResponse) -> {
+                        try (
+                            final ByteArrayOutputStream bos = new ByteArrayOutputStream(byteResponse.length);
+                            final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bos)
+                        ) {
+                            gzipOutputStream.write(byteResponse);
+
+                            return bos.toByteArray();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                }
             }
         };
     }
