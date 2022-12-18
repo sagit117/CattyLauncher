@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousSocketChannel;
 import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -54,8 +55,10 @@ public final class HttpBuilder implements IHttpBuilder {
         config = constructor.newInstance(pathFromResource, logger);
         responseExecutors = Executors.newWorkStealingPool(config.getPoolLimit());
 
-        logger.config("В построитель добавлен класс конфигурации");
-        logger.config("Инициирован пул потоков для предоставления ответа");
+        if (logger.isLoggable(Level.CONFIG)) {
+            logger.config("В построитель добавлен класс конфигурации");
+            logger.config("Инициирован пул потоков для предоставления ответа");
+        }
 
         return this;
     }
@@ -65,8 +68,11 @@ public final class HttpBuilder implements IHttpBuilder {
         config = configInstance;
         responseExecutors = Executors.newWorkStealingPool(config.getPoolLimit());
 
-        logger.config("В построитель добавлен класс конфигурации");
-        logger.config("Инициирован пул потоков для предоставления ответа");
+        if (logger.isLoggable(Level.CONFIG)) {
+            logger.config("В построитель добавлен класс конфигурации");
+            logger.config("Инициирован пул потоков для предоставления ответа");
+        }
+
         return this;
     }
 
@@ -112,6 +118,9 @@ public final class HttpBuilder implements IHttpBuilder {
             config.getLimitAllocateBufferForRequest(),
             Handler::new
         )) {
+            engine.setLogger(logger);
+            engine.setTimeToReadBuffer(config.getTimeToReadBuffer());
+
             engine.startServer();
         } catch (Throwable throwable) {
             throw new RuntimeException("Ошибка запуска сервера!", throwable);
@@ -146,6 +155,7 @@ public final class HttpBuilder implements IHttpBuilder {
                         request.setRoute(route.get());
                         plugins.exec(request, response);
 
+                        /* Подготовка ответа */
                         CompletableFuture
                             .runAsync(() -> {
                                 try {
@@ -183,6 +193,7 @@ public final class HttpBuilder implements IHttpBuilder {
 
                 final ByteBuffer responseBuffer = response.getByteBuffer();
 
+                /* Пост обработка запроса */
                 CompletableFuture.runAsync(() ->{
                     if (afterResponse != null) {
                         try {

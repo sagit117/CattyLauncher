@@ -4,6 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import java.net.InetSocketAddress;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConfigApp implements IConfig {
@@ -14,6 +15,7 @@ public class ConfigApp implements IConfig {
     private int poolLimit;
     private InetSocketAddress hostAddress;
     private int answerTimeout;
+    private long timeToReadBuffer;
     protected final Config config;
 
     public ConfigApp(String pathFromResource, Logger loggerInstance) {
@@ -41,12 +43,16 @@ public class ConfigApp implements IConfig {
         poolLimit = getConfigOrDefault("catty.poolLimit", 1, config);
         hostAddress = new InetSocketAddress(port);
         answerTimeout = getConfigOrDefault("answerTimeout", 30, config);
+        timeToReadBuffer = getConfigOrDefault("timeToReadBuffer", 5, config);
 
-        logger.config("Загружена настройка port: " + port);
-        logger.config("Загружена настройка protocol: " + protocol);
-        logger.config("Загружена настройка limitAllocateBufferForRequest: " + limitAllocateBufferForRequest);
-        logger.config("Загружена настройка poolLimit: " + poolLimit);
-        logger.config("Загружена настройка answerTimeout: " + answerTimeout);
+        if (logger.isLoggable(Level.CONFIG)) {
+            logger.config("Загружена настройка port: " + port);
+            logger.config("Загружена настройка protocol: " + protocol);
+            logger.config("Загружена настройка limitAllocateBufferForRequest: " + limitAllocateBufferForRequest);
+            logger.config("Загружена настройка poolLimit: " + poolLimit);
+            logger.config("Загружена настройка answerTimeout: " + answerTimeout);
+            logger.config("Загружена настройка timeToReadBuffer: " + timeToReadBuffer);
+        }
     }
 
     @Override
@@ -72,6 +78,11 @@ public class ConfigApp implements IConfig {
     @Override
     public int getAnswerTimeout() {
         return answerTimeout;
+    }
+
+    @Override
+    public long getTimeToReadBuffer() {
+        return timeToReadBuffer;
     }
 
     @Override

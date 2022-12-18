@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class PluginCollections {
@@ -26,9 +27,9 @@ public final class PluginCollections {
                 Arrays.stream(splitBody).forEach(parameters -> {
                     final Pair<String, String> pair = new Pair<>(parameters.split("="));
 
-                    logger.finest(
-                      "Установка параметров в запрос: " + pair
-                    );
+                    if (logger.isLoggable(Level.FINEST)) {
+                        logger.finest("Установка параметров в запрос: " + pair);
+                    }
 
                     if (pair.getValue() != null) {
                         request.setParams(

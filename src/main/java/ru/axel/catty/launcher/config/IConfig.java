@@ -11,6 +11,7 @@ public interface IConfig {
     int getLimitAllocateBufferForRequest();
     int getPort();
     int getAnswerTimeout();
+    long getTimeToReadBuffer();
     String getProtocol();
 
     /**
@@ -26,6 +27,9 @@ public interface IConfig {
         try {
             if (orDefault instanceof Integer) {
                 return (T) Integer.valueOf(config.getInt(prop));
+            }
+            if (orDefault instanceof Long) {
+                Long.valueOf(config.getLong(prop));
             }
             if (orDefault instanceof String) {
                 return (T) config.getString(prop);
