@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'ru.axel.catty.launcher'
-version '0.1.81'
+version '0.1.82'
 
 repositories {
     mavenCentral()

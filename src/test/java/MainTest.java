@@ -10,6 +10,7 @@ import ru.axel.catty.launcher.CattyLauncher;
 import ru.axel.catty.launcher.annotations.GET;
 import ru.axel.catty.launcher.config.ConfigApp;
 import ru.axel.catty.launcher.controllers.BaseController;
+import ru.axel.catty.launcher.plugins.PluginCollections;
 import ru.axel.logger.MiniLogger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -22,19 +23,20 @@ public class MainTest {
 
     public static void main(String[] args) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         new TestRoute(routing);
+        plugins.addPipelines("gzip", PluginCollections.Gzip(logger));
 
         CattyLauncher
-                .builder(logger)
-                .setConfig(ConfigApp.class, "config/application.conf")
-                .usePlugins(plugins)
-                .useRouting(routing)
-                .useWithExceptionally((iHttpCattyRequest, iHttpCattyResponse) -> {
-                    logger.info("Клиент: " + iHttpCattyRequest.getClientInfo().toString());
-                })
-                .useAfterResponse((iHttpCattyRequest, iHttpCattyResponse) -> {
-                    logger.info("Код ответ: " + iHttpCattyResponse.getResponseCode());
-                })
-                .launch();
+            .builder(logger)
+            .setConfig(ConfigApp.class, "config/application.conf")
+            .usePlugins(plugins)
+            .useRouting(routing)
+            .useWithExceptionally((iHttpCattyRequest, iHttpCattyResponse) -> {
+                logger.info("Клиент: " + iHttpCattyRequest.getClientInfo().toString());
+            })
+            .useAfterResponse((iHttpCattyRequest, iHttpCattyResponse) -> {
+                logger.info("Код ответ: " + iHttpCattyResponse.getResponseCode());
+            })
+            .launch();
     }
 
     public static class TestRoute extends BaseController {

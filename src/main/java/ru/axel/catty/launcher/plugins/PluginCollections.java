@@ -48,7 +48,7 @@ public final class PluginCollections {
     }
 
     @Contract(pure = true)
-    public static @NotNull RouteExecute Gzip() {
+    public static @NotNull RouteExecute Gzip(Logger logger) {
         return (request, response) -> {
             final String encoding = request.getHeaders(Headers.ACCEPT_ENCODING);
 
@@ -59,16 +59,28 @@ public final class PluginCollections {
 
                 if (isGzip) {
                     response.setTransformMethod((byteResponse) -> {
-                        try (
-                            final ByteArrayOutputStream bos = new ByteArrayOutputStream(byteResponse.length);
-                            final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bos)
-                        ) {
-                            gzipOutputStream.write(byteResponse);
-                            response.addHeader(Headers.CONTENT_ENCODING, "gzip");
+                        if (byteResponse.length > 1024) {
+                            try (
+                                final ByteArrayOutputStream bos = new ByteArrayOutputStream(byteResponse.length);
+                                final GZIPOutputStream gzipOutputStream = new GZIPOutputStream(bos)
+                            ) {
+                                gzipOutputStream.write(byteResponse);
+                                gzipOutputStream.finish();
 
-                            return bos.toByteArray();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                                response.addHeader(Headers.CONTENT_ENCODING, "gzip");
+
+                                final byte[] result = bos.toByteArray();
+
+                                if (logger.isLoggable(Level.FINEST)) {
+                                    logger.finest("Сжатие данных: " + byteResponse.length + " --> " + result.length);
+                                }
+
+                                return result;
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        } else {
+                            return byteResponse;
                         }
                     });
                 }
