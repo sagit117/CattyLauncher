@@ -4,7 +4,13 @@ plugins {
 }
 
 group 'ru.axel.catty.launcher'
-version '0.1.83'
+version '0.1.84'
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
 
 repositories {
     mavenCentral()
