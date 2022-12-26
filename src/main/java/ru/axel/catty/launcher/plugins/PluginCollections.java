@@ -68,6 +68,7 @@ public final class PluginCollections {
                                 gzipOutputStream.finish();
 
                                 response.addHeader(Headers.CONTENT_ENCODING, "gzip");
+                                response.addHeader(Headers.VARY, "Accept-Encoding");
 
                                 final byte[] result = bos.toByteArray();
 
