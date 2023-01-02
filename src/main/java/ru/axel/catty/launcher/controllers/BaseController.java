@@ -24,6 +24,7 @@ public abstract class BaseController {
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
                         e.printStackTrace();
+                        request.addException(e);
                     }
                 });
             } else if (method.isAnnotationPresent(POST.class)) {
@@ -33,6 +34,7 @@ public abstract class BaseController {
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         response.setResponseCode(ResponseCode.INTERNAL_SERVER_ERROR);
                         e.printStackTrace();
+                        request.addException(e);
                     }
                 });
             }
